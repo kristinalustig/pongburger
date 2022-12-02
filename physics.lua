@@ -46,17 +46,6 @@ function P.initPhysics()
   
   h1 = 40
   h2 = 642
-  
-  
-  data = {somedata = 1}
-  
-  --bunch of other stuff
-  
-  data = {}
-  
-  for k, v in ipairs(data) do
-    --
-  end
 
   world = lp.newWorld(0, 0, true)
   
@@ -157,23 +146,16 @@ end
 
 function P.update(dt)
   
+  if startNewRoundOnNextCycle then
+    P.startNewRound(scoringPlayer, currentBall.name)
+  end
+  
   world:update(dt)
   
   local currBallX = currentBall.body:getX()
   local currBallY = currentBall.body:getY()
   local newBallX = currBallX + ballVelocityX
   local newBallY = currBallY + ballVelocityY
-  
-  local touchingLeft = currentBall.body:isTouching(objects.walls.left.body)
-  local touchingRight = currentBall.body:isTouching(objects.walls.right.body)
-
-  if touchingLeft and not startNewRoundOnNextCycle then
-    P.startNewRound(2, currentBall.name)
-  elseif touchingRight and not startNewRoundOnNextCycle then
-    P.startNewRound(1, currentBall.name)
-  elseif startNewRoundOnNextCycle then
-    P.startNewRound(scoringPlayer, currentBall.name)
-  end
   
   if newBallY < 40 or newBallY > 642 - 32 then
     newBallY = newBallY - ballVelocityY
