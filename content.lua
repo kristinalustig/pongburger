@@ -82,9 +82,62 @@ function C.getImage(t, n) --type, name
   
 end
 
+function C.drawIsNowServing(n)
+  
+  local imgTable = ballImages
+  local serving = nil
+  local niceName = ""
+  
+  lg.draw(nowServing, 236, 260, 0, .5, .5)
+
+  if n == "bunTop" then
+    serving = imgTable.bunTop
+    niceName = "the top half of the bun"
+  elseif n == "bunBottom" then
+    serving = imgTable.bunBottom
+    niceName = "the bottom half of the bun"
+  elseif n == "cheese" then
+    serving = imgTable.cheese
+    niceName = "a nice slice of cheese. mmm, cheese."
+  elseif n == "ketchup" then
+    serving = imgTable.ketchup
+    niceName = "ooey gooey ketchup"
+  elseif n == "lettuce" then
+    serving = imgTable.lettuce
+    niceName = "crisp, refreshing lettuce"
+  elseif n == "mayo" then
+    serving = imgTable.mayo
+    niceName = "a dollop of good old-fashioned mayonnaise"
+  elseif n == "mustard" then
+    serving = imgTable.mustard
+    niceName = "yellow mustard or brown, your preference!"
+  elseif n == "patty" then
+    serving = imgTable.patty
+    niceName = "a big juicy burger made from veggies or meat"
+  elseif n == "pickle" then
+    serving = imgTable.pickle
+    niceName = "tangy crispy dill pickles"
+  elseif n == "tomato" then
+    serving = imgTable.tomato
+    niceName = "a beautiful tomato slice"
+  end
+  
+  lg.draw(serving, 370, 320, 0, .5)
+  lg.printf(niceName, 236, 400, 328, "center")
+  lg.printf("press 'enter' to serve", 236, 440, 328, "center")
+  
+end
+
 function C.draw()
   
   lg.draw(mainScreen, 0, 0, 0, .5, .5)
+  
+end
+
+function C.drawTitle()
+  
+  lg.draw(titleScreen, 0, 0, 0, .5, .5)
+  lg.printf("PRESS ENTER TO BEGIN", 0, 600, 800, "center")
   
 end
 

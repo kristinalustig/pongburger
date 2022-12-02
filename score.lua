@@ -14,13 +14,13 @@ local playerModTwo
 
 function S.initScore()
   
-  rowOneY = 660
-  rowTwoY = 760
+  rowOneY = 656
+  rowTwoY = 720
   iconWidth = 80
   playerOneScore = 0
   playerTwoScore = 0
-  playerModOne = 0
-  playerModTwo = 400
+  playerModOne = 16
+  playerModTwo = 416
   
   
   playerOneIngreds = S.initIngreds(playerModOne)
@@ -33,11 +33,13 @@ function S.drawScore()
   
   lg.setColor(1, 1, 1)
   lg.printf(playerOneScore, 370, 10, 20, "center")
+  lg.printf(playerTwoScore, 410, 10, 20, "center")
   
   for _, v in pairs(playerOneIngreds) do
     if v.earned > 0 then
       C.drawIcon(v.x, v.y)
     end
+    lg.printf(v.name, v.x-16, v.y + 48, 80, "center")
   end
   
   lg.reset()
@@ -46,6 +48,7 @@ function S.drawScore()
     if v.earned > 0 then
       C.drawIcon(v.x, v.y)
     end
+    lg.printf(v.name, v.x-16, v.y + 48, 80, "center")
   end
   
 end
@@ -76,10 +79,10 @@ function S.initIngreds(playerMod)
   {
     bunTop = {name = "bunTop", earned = 0, x = playerMod + (iconWidth * invertIfNeeded(1, playerMod)), y = rowOneY},
     bunBottom = {name = "bunBottom", earned = 0, x = playerMod + (iconWidth * invertIfNeeded(1, playerMod)), y = rowTwoY},
-    cheese = {name = "cheese", earned = 0, x = playerMod + (iconWidth * 3), y = rowTwoY},
+    cheese = {name = "cheese", earned = 0, x = playerMod + (iconWidth * invertIfNeeded(3, playerMod)), y = rowTwoY},
     ketchup = {name = "ketchup", earned = 0, x = playerMod + (iconWidth * invertIfNeeded(2, playerMod)), y = rowOneY},
     lettuce = {name = "lettuce", earned = 0, x = playerMod + (iconWidth * invertIfNeeded(5, playerMod)), y = rowOneY},
-    mustard = {name = "mustard", earned = 0, x = playerMod + (iconWidth * 3), y = rowOneY},
+    mustard = {name = "mustard", earned = 0, x = playerMod + (iconWidth * invertIfNeeded(3, playerMod)), y = rowOneY},
     mayo = {name = "mayo", earned = 0, x = playerMod + (iconWidth * invertIfNeeded(4, playerMod)), y = rowOneY},
     patty = {name = "patty", earned = 0, x = playerMod + (iconWidth * invertIfNeeded(2, playerMod)), y = rowTwoY},
     pickle = {name = "pickle", earned = 0, x = playerMod + (iconWidth * invertIfNeeded(5, playerMod)), y = rowTwoY},
@@ -93,10 +96,16 @@ end
 function invertIfNeeded(n, pm)
   
   if pm == playerModOne then
-    return n
+    return n-1
   else
     return 5 - n
   end
+  
+end
+
+function S.checkWinConditions()
+  
+  return false
   
 end
 

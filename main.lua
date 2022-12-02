@@ -10,10 +10,13 @@ la = love.audio
 Scenes = 
 {
   TITLE = 1,
-  BOARD = 2,
-  PAUSE = 3,
-  GAME_OVER = 4
+  INTRO = 2,
+  BOARD = 3,
+  PAUSE = 4,
+  GAME_OVER = 5
 }
+
+currentScene = Scenes.TITLE
 
 function love.load()
   
@@ -25,14 +28,39 @@ end
 
 function love.update(dt)
   
-  P.update(dt)
+  if currentScene == Scenes.BOARD then
+    P.update(dt)
+  end
   
 end
 
 function love.draw()
   
-  C.draw()
-  P.draw()
-  S.drawScore()
+  if currentScene == Scenes.TITLE then
+    C.drawTitle()
+  else
+    C.draw()
+    P.draw()
+    S.drawScore()
+  end
   
 end
+
+function love.keyreleased(k, s)
+  
+  if currentScene == Scenes.TITLE then
+    if k == "return" then
+      currentScene = Scenes.BOARD
+    end
+  elseif currentScene == Scenes.BOARD then
+    if k == "escape" then
+      currentScene = Scenes.PAUSE
+    end
+  elseif currentScene == Scenes.PAUSE then
+    if k == "return" then
+      currentScene = Scenes.BOARD
+    end
+  end
+  
+end
+
