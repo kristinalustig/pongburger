@@ -4,7 +4,6 @@ local ballImages
 local paddleImages
 local titleScreen
 local nowServing
-local gameOverScreen
 local startingPaddle
 local iconOverlay
 local mainScreen
@@ -31,17 +30,18 @@ local gameOverBox
 local gameOverOne
 local gameOverTwo
 local tinyFont
+local howToPlay
 
 function C.initAssets()
   
   titleScreen =lg.newImage("/assets/pongburger-title.png")
   nowServing = lg.newImage("/assets/now-serving.png")
   iconOverlay = lg.newImage("/assets/icon-overlay.png")
-  gameOverScreen = lg.newImage("/assets/pongburger-title.png")
   mainScreen = lg.newImage("/assets/pongburger-ui.png")
   gameOverOne = lg.newImage("/assets/gameOverOne.png")
   gameOverTwo = lg.newImage("/assets/gameOverTwo.png")
   gameOverBox = lg.newImage("/assets/gameOverBox.png")
+  howToPlay = lg.newImage("/assets/howToPlay.png")
   
   startingPaddle = lg.newImage("/assets/paddle-plate.png")
   
@@ -54,7 +54,7 @@ function C.initAssets()
   
   numFont = lg.newFont("/assets/fonts/SpaceGrotesk-SemiBold.ttf", 20)
   displayFont = lg.newFont("/assets/fonts/LondrinaSolid-Regular.ttf", 20)
-  tinyFont = lg.newFont("/assets/fonts/OpenSans-Light.ttf", 14)
+  tinyFont = lg.newFont("/assets/fonts/ConcertOne-Regular.ttf", 14)
   pbfont = lg.newImageFont("/assets/fonts/pbfont.png", "PONGBURE!AUSCD- HWTLYI")
 
   ballImages = {
@@ -315,6 +315,14 @@ end
 function C.setNumFont()
   
   lg.setFont(numFont)
+  
+end
+
+function C.drawHowToPlay()
+  
+  C.drawFancyPBs("HOW TO PLAY", 330)
+  lg.reset()
+  lg.draw(howToPlay, 0, 0, 0, .5, .5)
   
 end
 

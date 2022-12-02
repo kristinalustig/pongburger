@@ -43,27 +43,33 @@ end
 
 function love.draw()
   
-  if currentScene == Scenes.TITLE then
-    C.drawTitle()
-  elseif currentScene == Scenes.GAME_OVER then
-    C.drawGameOver(winner)
-    P.drawGameOverDetails()
-  else
+  if currentScene == Scenes.BOARD or currentScene == Scenes.PAUSE then
     C.draw()
     P.draw()
     S.drawScore()
     if currentScene == Scenes.PAUSE then
       C.drawPause()
     end
+  elseif currentScene == Scenes.TITLE then
+    C.drawTitle()
+  elseif currentScene == Scenes.INTRO then
+    C.drawHowToPlay()
+  elseif currentScene == Scenes.GAME_OVER then
+    C.drawGameOver(winner)
+    P.drawGameOverDetails()
   end
   
 end
 
 function love.keyreleased(k, s)
   
-  if currentScene == Scenes.TITLE then
+  if currentScene == Scenes.INTRO then
     if k == "return" then
       currentScene = Scenes.BOARD
+    end
+  elseif currentScene == Scenes.TITLE then
+    if k == "return" then
+      currentScene = Scenes.INTRO
     end
   elseif currentScene == Scenes.BOARD then
     if k == "escape" then

@@ -1,5 +1,13 @@
-name: pong
-version: 0.0.2
+name: pongburger
+shortname: pongburger
+version: 0.0.3
 assets:
   - "*.lua"
   - assets/**/*
+
+targets:
+- love
+- web
+- win-32
+- win-64
+- mac

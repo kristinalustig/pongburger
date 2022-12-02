@@ -26,6 +26,7 @@ local scoringPlayer
 local isNowServing
 local walls = {}
 local isGameOver
+local timePassed
 
 function P.initPhysics()
   
@@ -85,6 +86,7 @@ function P.initPhysics()
   scoringPlayer = 0
   isNowServing = true
   isGameOver = false
+  timePassed = 1
 
 end
 
@@ -224,6 +226,22 @@ function P.update(dt)
   
     world:update(dt)
     
+    timePassed = timePassed + 1
+    
+    if timePassed % 100 == 0 then
+      local change = .2
+      if ballVelocityX < 0 then
+        ballVelocityX = ballVelocityX - change
+      else
+        ballVelocityX = ballVelocityX + change
+      end
+      if ballVelocityY < 0 then
+        ballVelocityY = ballVelocityY - change
+      else
+        ballVelocityY = ballVelocityY + change
+      end
+    end
+    
     local currBallX = currentBall.body:getX()
     local currBallY = currentBall.body:getY()
     local newBallX = currBallX + ballVelocityX
@@ -257,6 +275,8 @@ function P.update(dt)
     if k(playerTwoDownKey) then
       P.movePaddle(paddleBlob2, 1)
     end
+    
+    P.checkForLostBall()
   
   else
   
@@ -354,6 +374,19 @@ function P.checkForStuckBall(newY, oldY)
 
   return newY
   
+end
+
+function P.checkForLostBall()
+  
+  local ballX = currentBall.body:getX()
+  
+  if ballX < 0 then
+    beginContact(currentBall.fixture, walls.left.fixture)
+    print ("caught u!")
+  elseif ballX > 800 then
+    beginContact(currentBall.fixture, walls.right.fixture)
+    print ("caught u!")
+  end
 end
 
 function P.startNewRound(scoredPlayerNum, ingredName)

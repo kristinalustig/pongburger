@@ -22,7 +22,7 @@ function S.initScore()
   playerTwoScore = 0
   playerModOne = 16
   playerModTwo = 416
-  winningScore = 1
+  winningScore = 15
   
   playerOneIngreds = S.initIngreds(playerModOne)
   playerTwoIngreds = S.initIngreds(playerModTwo)
