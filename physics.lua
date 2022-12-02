@@ -245,18 +245,7 @@ function beginContact(a, b, coll)
 end
 
 function P.checkForStuckBall(newY, oldY)
-  
-  if newY == oldY then
-    timeBallStuck = timeBallStuck + 1
-    if timeBallStuck > 3 then
-      timeBallStuck = 0
-      if newY < 400 then
-        return (newY + 10)
-      else
-        return (newY - 10)
-      end
-    end
-  end
+
   
   return newY
   
