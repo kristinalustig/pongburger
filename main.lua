@@ -18,18 +18,25 @@ Scenes =
 
 currentScene = Scenes.TITLE
 
+local winner = false
+
 function love.load()
   
   C.initAssets()
   P.initPhysics()
   S.initScore()
+  C.playTheme()
   
 end
 
 function love.update(dt)
   
   if currentScene == Scenes.BOARD then
-    P.update(dt)
+    local isGameOver = P.update(dt)
+    winner = isGameOver
+    if isGameOver then
+      currentScene = Scenes.GAME_OVER
+    end
   end
   
 end
@@ -38,10 +45,16 @@ function love.draw()
   
   if currentScene == Scenes.TITLE then
     C.drawTitle()
+  elseif currentScene == Scenes.GAME_OVER then
+    C.drawGameOver(winner)
+    P.drawGameOverDetails()
   else
     C.draw()
     P.draw()
     S.drawScore()
+    if currentScene == Scenes.PAUSE then
+      C.drawPause()
+    end
   end
   
 end
@@ -59,6 +72,11 @@ function love.keyreleased(k, s)
   elseif currentScene == Scenes.PAUSE then
     if k == "return" then
       currentScene = Scenes.BOARD
+    end
+  elseif currentScene == Scenes.GAME_OVER then
+    if k == "y" then
+      P.resetAll()
+      currentScene = Scenes.TITLE
     end
   end
   

@@ -25,6 +25,7 @@ local startNewRoundOnNextCycle
 local scoringPlayer
 local isNowServing
 local walls = {}
+local isGameOver
 
 function P.initPhysics()
   
@@ -33,8 +34,8 @@ function P.initPhysics()
   w, h, _ = love.window.getMode()
   
   ballData = {
-    {name = "bunTop", appeared = 0},
-    {name = "bunBottom", appeared = 1},
+    {name = "bun top", appeared = 0},
+    {name = "bun bottom", appeared = 1},
     {name = "cheese", appeared = 0},
     {name = "ketchup", appeared = 0},
     {name = "lettuce", appeared = 0},
@@ -52,7 +53,7 @@ function P.initPhysics()
   
   world:setCallbacks(beginContact, endContact, preSolve, postSolve)
   
-  currentBall = P.createBallObject("bunBottom", 1, w/2, h/2)
+  currentBall = P.createBallObject("bun bottom", 1, w/2, h/2)
   
   --name, density, x, y
   paddleBlob1.first = P.createPaddleObject("startingPaddle", 1, 24, 200, 1)
@@ -83,7 +84,58 @@ function P.initPhysics()
   startNewRoundOnNextCycle = false
   scoringPlayer = 0
   isNowServing = true
+  isGameOver = false
 
+end
+
+function P.drawGameOverDetails()
+  
+  local winningBurger = {}
+  local winningBurgerText = "Player "
+  
+  if isGameOver == "p1" then
+    winningBurger = paddleBlob1.others
+    winningBurgerText = winningBurgerText .. "one "
+  elseif isGameOver == "p2" then
+    winningBurger = paddleBlob2.others
+    winningBurgerText = winningBurgerText .. "two "
+  end
+
+  winningBurgerText = winningBurgerText .. "created a delicious burger composed of, in order from bottom to top: "
+  
+  local iter = 1
+  for _, v in pairs(winningBurger) do
+    if iter == #winningBurger - 1 then
+      winningBurgerText = winningBurgerText .. v.name .. ", and "
+    elseif iter == #winningBurger then
+      winningBurgerText = winningBurgerText .. v.name .. ". Congrats!"
+    else
+      winningBurgerText = winningBurgerText .. v.name .. ", "
+    end
+    iter = iter + 1
+  end
+  
+  C.printWinningBurgerText(winningBurgerText)
+  
+end
+
+function P.resetAll() --called on gameOver screen
+  
+  S.resetAll()
+  ballVelocityX = -5
+  ballVelocityY = 5
+  timeBallStuck = 0
+  startNewRoundOnNextCycle = false
+  scoringPlayer = 0
+  isNowServing = true
+  isGameOver = false
+  paddleBlob1.first.body:destroy()
+  paddleBlob2.first.body:destroy()
+  paddleBlob1.others = {}
+  paddleBlob2.others = {}
+  paddleBlob1.first = P.createPaddleObject("startingPaddle", 1, 24, 200, 1)
+  paddleBlob2.first = P.createPaddleObject("startingPaddle", 1, w-24, 200, 1)
+  
 end
 
 function P.createPaddleObject(n, d, x, y, num) --name, density, bodyX, bodyY, numPaddle
@@ -99,7 +151,7 @@ function P.createPaddleObject(n, d, x, y, num) --name, density, bodyX, bodyY, nu
   else
     tempTable.name = n
     tempTable.image = C.getImage("paddle", n)
-    tempTable.shape = lp.newRectangleShape(32+(32*numPaddle*2), 192)
+    tempTable.shape = lp.newRectangleShape(32+(32*(num)), 192)
   end
   
   return tempTable
@@ -136,14 +188,14 @@ end
 
 function P.draw()
   
-  local iterP = 1
+  local iterP = .25
   lg.draw(paddleBlob1.first.image, (paddleBlob1.first.body:getX()-(paddleBlob1.first.image:getWidth()/4)), paddleBlob1.first.body:getY()-(paddleBlob1.first.image:getHeight()/4), 0, .5, .5)
   for k, v in pairs(paddleBlob1.others) do
     lg.draw(v.image, (paddleBlob1.first.body:getX()+(v.image:getWidth()/4*iterP)), paddleBlob1.first.body:getY()-(v.image:getHeight()/4), 0, .5, .5)
     iterP = iterP + 1
   end
   
-  iterP = 1
+  iterP = 2
   lg.draw(paddleBlob2.first.image, (paddleBlob2.first.body:getX()-(paddleBlob2.first.image:getWidth()/4)), paddleBlob2.first.body:getY()-(paddleBlob2.first.image:getHeight()/4), 0, .5, .5)
   for k, v in pairs(paddleBlob2.others) do
     lg.draw(v.image, (paddleBlob2.first.body:getX()-(v.image:getWidth()/4*iterP)), paddleBlob2.first.body:getY()-(v.image:getHeight()/4), 0, .5, .5)
@@ -159,6 +211,10 @@ function P.draw()
 end
 
 function P.update(dt)
+    
+  if isGameOver then
+    return isGameOver
+  end
   
   if startNewRoundOnNextCycle then
     P.startNewRound(scoringPlayer, currentBall.name)
@@ -202,7 +258,7 @@ function P.update(dt)
       P.movePaddle(paddleBlob2, 1)
     end
   
-else
+  else
   
     if lk.isDown("return") then
       isNowServing = false
@@ -210,11 +266,13 @@ else
     
   end
   
+  return false
+  
 end
 
 function P.movePaddle(p, fy)
   
-  p.first.body:applyForce(0, fy * paddleMovementFactor)
+  p.first.body:applyForce(0, fy * (paddleMovementFactor+(10*#p.others)))
   
 end
 
@@ -261,6 +319,7 @@ function beginContact(a, b, coll)
     
     if whichWall == "top" or whichWall == "bottom" then
       ballVelocityY = 0 - ballVelocityY
+      C.playBup()
     elseif whichWall == "left" then
       startNewRoundOnNextCycle = true
       scoringPlayer = 2
@@ -268,6 +327,7 @@ function beginContact(a, b, coll)
       startNewRoundOnNextCycle = true
       scoringPlayer = 1
     elseif whichWall == "leftPaddle" or whichWall == "rightPaddle" then
+      C.playBip()
       ballVelocityX = 0 - ballVelocityX
     end
     
@@ -283,7 +343,6 @@ function P.checkForStuckBall(newY, oldY)
     timeBallStuck = 0
   end
   if timeBallStuck >= 3 then
-    print("yes")
     if newY > 400 then
       newY = newY - 10
     else
@@ -301,11 +360,15 @@ function P.startNewRound(scoredPlayerNum, ingredName)
   
   S.updateScore(scoredPlayerNum, ingredName)
   
-  local isGameOver = S.checkWinConditions()
+  local p1Wins, p2Wins = S.checkWinConditions()
   
-  if isGameOver then
-    ---how to end the game?
+  if p1Wins then
+    isGameOver = "p1"
+  elseif p2Wins then
+    isGameOver = "p2"
   end
+  
+  C.playScoreSound()
   
   if scoredPlayerNum > 0 then
     P.updatePaddle(ingredName, scoredPlayerNum)
@@ -325,15 +388,29 @@ function P.startNewRound(scoredPlayerNum, ingredName)
   
   if #potentialBalls == 0 then
     appearedNum = appearedNum + 1
-    newBall = "bunTop"
+    newBall = "bun top"
   else
-    local rand = math.random(1, #potentialBalls)
+    local rand = love.math.random(1, #potentialBalls)
     newBall = potentialBalls[rand]
   end
   
   currentBall.body:destroy()
   
   currentBall = P.createBallObject(newBall.name, 1, w/2, h/2)
+  
+  local r = love.math.random(1, 2, 3, 4)
+  local vx, vy = 5, 5
+  if r == 1 then
+    vx, vy = 5, 5
+  elseif r == 2 then
+    vx, vy = -5, 5
+  elseif r == 3 then
+    vx, vy = -5, -5
+  elseif r == 4 then
+    vx, vy = 5, -5
+  end
+  ballVelocityX = vx
+  ballVelocityY = vy
   
   startNewRoundOnNextCycle = false
   scoringPlayer = 0
@@ -353,7 +430,7 @@ function P.updatePaddle(n, p)
   end
   
   local newPaddle = P.createPaddleObject(n, 0, 0, 0, #blob.others+1)
-  newPaddle.fixture = lp.newFixture(blob.first.body, newPaddle.shape, .5)
+  newPaddle.fixture = lp.newFixture(blob.first.body, newPaddle.shape, .1)
   table.insert(blob.others, newPaddle)
   
 end
