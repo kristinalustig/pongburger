@@ -67,8 +67,6 @@ function P.initPhysics()
   objects.walls.right = P.createWall("right", w, 0, w, h) 
   objects.walls.top = P.createWall("top", 0, h1, w, h1) 
   objects.walls.bottom = P.createWall("bottom", 0, h2, w, h2) 
-  objects.walls.left.fixture:setSensor(true)
-  objects.walls.right.fixture:setSensor(true)
   
   playerOneUpKey = "w"
   playerOneDownKey = "s"
@@ -226,6 +224,8 @@ function beginContact(a, b, coll)
       end
     end
     
+    print (whichWall)
+    
     if whichWall == "top" or whichWall == "bottom" then
       ballVelocityY = 0 - ballVelocityY
     elseif whichWall == "left" then
@@ -266,8 +266,6 @@ function P.startNewRound(scoredPlayerNum, ingredName)
   
   S.updateScore(scoredPlayerNum, ingredName)
   
-  currentBall.body:destroy()
-  
   local newBall = ""
   
   local potentialBalls = {}
@@ -286,8 +284,9 @@ function P.startNewRound(scoredPlayerNum, ingredName)
   else
     local rand = math.random(1, #potentialBalls)
     newBall = potentialBalls[rand]
-    print(newBall)
   end
+  
+  currentBall.body:destroy()
   
   currentBall = P.createBallObject(newBall.name, 1, w/2, h/2)
   
