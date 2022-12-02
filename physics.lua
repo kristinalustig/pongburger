@@ -4,7 +4,6 @@ local C = require("content")
 local S = require("score")
 
 local world
-local objects = {}
 local startingXPaddle
 local startingYPaddle
 local currentBall
@@ -25,6 +24,7 @@ local w, h
 local startNewRoundOnNextCycle
 local scoringPlayer
 local isNowServing
+local walls = {}
 
 function P.initPhysics()
   
@@ -54,43 +54,39 @@ function P.initPhysics()
   
   currentBall = P.createBallObject("bunBottom", 1, w/2, h/2)
   
-  objects.walls = {}
-  objects.centerLine = {}
-  objects.paddleBlob1 = {}
-  objects.paddleBlob2 = {}
-  
   --name, density, x, y
-  objects.paddleBlob1.first = P.createPaddleObject("startingPaddle", 1, 24, 200, 1)
-  objects.paddleBlob2.first = P.createPaddleObject("startingPaddle", 1, w-24, 200, 1)
-  objects.paddleBlob1.others = {}
-  objects.paddleBlob2.others = {}
+  paddleBlob1.first = P.createPaddleObject("startingPaddle", 1, 24, 200, 1)
+  paddleBlob2.first = P.createPaddleObject("startingPaddle", 1, w-24, 200, 1)
+  paddleBlob1.others = {}
+  paddleBlob2.others = {}
   
   --name, x1, y1, x2, y2
-  objects.walls.left = P.createWall("left", 0, 0, 0, h) 
-  objects.walls.right = P.createWall("right", w, 0, w, h) 
-  objects.walls.top = P.createWall("top", 0, h1, w, h1) 
-  objects.walls.bottom = P.createWall("bottom", 0, h2, w, h2) 
+  walls.left = P.createWall("left", 0, 0, 0, h) 
+  walls.right = P.createWall("right", w, 0, w, h) 
+  walls.top = P.createWall("top", 0, h1, w, h1) 
+  walls.bottom = P.createWall("bottom", 0, h2, w, h2) 
   
+  --physics-related controls
   playerOneUpKey = "w"
   playerOneDownKey = "s"
   playerTwoUpKey = "up"
   playerTwoDownKey = "down"
   
+  --physics constants
   paddleMovementFactor = 1000
-  
   ballVelocityX = -5
   ballVelocityY = 5
-  
   timeBallStuck = 0
+  
+  --handling scoring on this side (more in score.lua)
   appearedNum = 2
-
   startNewRoundOnNextCycle = false
   scoringPlayer = 0
   isNowServing = true
 
 end
 
-function P.createPaddleObject(n, d, x, y, num) --name, density
+function P.createPaddleObject(n, d, x, y, num) --name, density, bodyX, bodyY, numPaddle
   
   local tempTable = {}
   
@@ -103,14 +99,14 @@ function P.createPaddleObject(n, d, x, y, num) --name, density
   else
     tempTable.name = n
     tempTable.image = C.getImage("paddle", n)
-    tempTable.shape = lp.newRectangleShape(32, 192)
+    tempTable.shape = lp.newRectangleShape(32+(32*numPaddle*2), 192)
   end
   
   return tempTable
 
 end
 
-function P.createBallObject(n, d, x, y) --name, density
+function P.createBallObject(n, d, x, y) --name, density, bodyX, bodyY
   
   local tempTable = {}
   
@@ -124,7 +120,7 @@ function P.createBallObject(n, d, x, y) --name, density
 
 end
 
-function P.createWall(n, x1, y1, x2, y2)
+function P.createWall(n, x1, y1, x2, y2) --name, point1 x+y, point2 x+7
   
   local tempTable = {}
   
@@ -140,18 +136,18 @@ end
 
 function P.draw()
   
-  local iterP = 2
-  lg.draw(objects.paddleBlob1.first.image, (objects.paddleBlob1.first.body:getX()-(objects.paddleBlob1.first.image:getWidth()/4)), objects.paddleBlob1.first.body:getY()-(objects.paddleBlob1.first.image:getHeight()/4), 0, .5, .5)
-  for k, v in pairs(objects.paddleBlob1.others) do
-    lg.draw(v.image, (objects.paddleBlob1.first.body:getX()-(v.image:getWidth()/4))*(iterP), objects.paddleBlob1.first.body:getY()-(v.image:getHeight()/4), 0, .5, .5)
-    iterP = iterP + 2
+  local iterP = 1
+  lg.draw(paddleBlob1.first.image, (paddleBlob1.first.body:getX()-(paddleBlob1.first.image:getWidth()/4)), paddleBlob1.first.body:getY()-(paddleBlob1.first.image:getHeight()/4), 0, .5, .5)
+  for k, v in pairs(paddleBlob1.others) do
+    lg.draw(v.image, (paddleBlob1.first.body:getX()+(v.image:getWidth()/4*iterP)), paddleBlob1.first.body:getY()-(v.image:getHeight()/4), 0, .5, .5)
+    iterP = iterP + 1
   end
   
-  iterP = 2
-  lg.draw(objects.paddleBlob2.first.image, (objects.paddleBlob2.first.body:getX()-(objects.paddleBlob2.first.image:getWidth()/4)), objects.paddleBlob2.first.body:getY()-(objects.paddleBlob2.first.image:getHeight()/4), 0, .5, .5)
-  for k, v in pairs(objects.paddleBlob2.others) do
-    lg.draw(v.image, (objects.paddleBlob2.first.body:getX()-(v.image:getWidth()/4))*(iterP), objects.paddleBlob2.first.body:getY()-(v.image:getHeight()/4), 0, .5, .5)
-    iterP = iterP + 2
+  iterP = 1
+  lg.draw(paddleBlob2.first.image, (paddleBlob2.first.body:getX()-(paddleBlob2.first.image:getWidth()/4)), paddleBlob2.first.body:getY()-(paddleBlob2.first.image:getHeight()/4), 0, .5, .5)
+  for k, v in pairs(paddleBlob2.others) do
+    lg.draw(v.image, (paddleBlob2.first.body:getX()-(v.image:getWidth()/4*iterP)), paddleBlob2.first.body:getY()-(v.image:getHeight()/4), 0, .5, .5)
+    iterP = iterP + 1
   end
   
   lg.draw(currentBall.image, currentBall.body:getX()-32, currentBall.body:getY()-32, 0, .5, .5)
@@ -184,8 +180,8 @@ function P.update(dt)
     currentBall.body:setX(newBallX)
     currentBall.body:setY(newBallY)
     
-    objects.paddleBlob1.first.body:setX(24)
-    objects.paddleBlob2.first.body:setX(776)
+    paddleBlob1.first.body:setX(24)
+    paddleBlob2.first.body:setX(776)
     
     local k = love.keyboard.isDown
     
@@ -194,16 +190,16 @@ function P.update(dt)
     end
     
     if k(playerOneUpKey) then
-      P.movePaddle(objects.paddleBlob1, -1)
+      P.movePaddle(paddleBlob1, -1)
     end
     if k(playerOneDownKey) then
-      P.movePaddle(objects.paddleBlob1, 1)
+      P.movePaddle(paddleBlob1, 1)
     end
     if k(playerTwoUpKey) then
-      P.movePaddle(objects.paddleBlob2, -1)
+      P.movePaddle(paddleBlob2, -1)
     end
     if k(playerTwoDownKey) then
-      P.movePaddle(objects.paddleBlob2, 1)
+      P.movePaddle(paddleBlob2, 1)
     end
   
 else
@@ -240,30 +236,28 @@ function beginContact(a, b, coll)
   end
   
   if doesContactInvolveBall then
-    for k, v in pairs(objects.walls) do
+    for k, v in pairs(walls) do
       if contactPoint == v.fixture then
         whichWall = v.name
       end
     end
     
     if whichWall == "" then
-      if #objects.paddleBlob1.others > 0 then
-        if contactPoint == objects.paddleBlob1.others[#objects.paddleBlob1.others].fixture then
+      if #paddleBlob1.others > 0 then
+        if contactPoint == paddleBlob1.others[#paddleBlob1.others].fixture then
           whichWall = "leftPaddle"
         end
-      elseif contactPoint == objects.paddleBlob1.first.fixture then
+      elseif contactPoint == paddleBlob1.first.fixture then
           whichWall = "leftPaddle"
       end
-      if #objects.paddleBlob2.others > 0 then
-        if contactPoint == objects.paddleBlob2.others[#objects.paddleBlob2.others].fixture then
+      if #paddleBlob2.others > 0 then
+        if contactPoint == paddleBlob2.others[#paddleBlob2.others].fixture then
           whichWall = "rightPaddle"
         end
-      elseif contactPoint == objects.paddleBlob2.first.fixture then
+      elseif contactPoint == paddleBlob2.first.fixture then
           whichWall = "rightPaddle"
       end
     end
-    
-    print (whichWall)
     
     if whichWall == "top" or whichWall == "bottom" then
       ballVelocityY = 0 - ballVelocityY
@@ -289,6 +283,7 @@ function P.checkForStuckBall(newY, oldY)
     timeBallStuck = 0
   end
   if timeBallStuck >= 3 then
+    print("yes")
     if newY > 400 then
       newY = newY - 10
     else
@@ -312,14 +307,8 @@ function P.startNewRound(scoredPlayerNum, ingredName)
     ---how to end the game?
   end
   
-  if scoredPlayerNum == 1 then
-    local newPaddle = P.createPaddleObject(ingredName, 0, 0, 0, #objects.paddleBlob1.others+1)
-    newPaddle.fixture = lp.newFixture(objects.paddleBlob1.first.body, newPaddle.shape, .5)
-    table.insert(objects.paddleBlob1.others, newPaddle)
-  elseif scoredPlayerNum == 2 then
-    local newPaddle = P.createPaddleObject(ingredName, 0, 0, 0, #objects.paddleBlob2.others+1)
-    newPaddle.fixture = lp.newFixture(objects.paddleBlob2.first.body, newPaddle.shape, .5)
-    table.insert(objects.paddleBlob2.others, newPaddle)
+  if scoredPlayerNum > 0 then
+    P.updatePaddle(ingredName, scoredPlayerNum)
   end
 
   local newBall = ""
@@ -350,6 +339,22 @@ function P.startNewRound(scoredPlayerNum, ingredName)
   scoringPlayer = 0
   
   isNowServing = true
+  
+end
+
+function P.updatePaddle(n, p)
+  
+  local blob = {}
+  
+  if p == 1 then 
+    blob = paddleBlob1
+  else
+    blob = paddleBlob2
+  end
+  
+  local newPaddle = P.createPaddleObject(n, 0, 0, 0, #blob.others+1)
+  newPaddle.fixture = lp.newFixture(blob.first.body, newPaddle.shape, .5)
+  table.insert(blob.others, newPaddle)
   
 end
 
