@@ -244,8 +244,10 @@ function P.update(dt)
     
     local currBallX = currentBall.body:getX()
     local currBallY = currentBall.body:getY()
+    
     local newBallX = currBallX + ballVelocityX
     local newBallY = currBallY + ballVelocityY
+    
     
     if newBallY < 40 or newBallY > 642 - 32 then
       newBallY = newBallY - ballVelocityY
@@ -351,6 +353,8 @@ function beginContact(a, b, coll)
       ballVelocityX = 0 - ballVelocityX
     end
     
+    ballVelocityX, ballVelocityY = tinyChanges(ballVelocityX, ballVelocityY)
+    
   end
   
 end
@@ -432,15 +436,16 @@ function P.startNewRound(scoredPlayerNum, ingredName)
   currentBall = P.createBallObject(newBall.name, 1, w/2, h/2)
   
   local r = love.math.random(1, 2, 3, 4)
+  local tinyVar = love.math.random(1, 9)
   local vx, vy = 5, 5
   if r == 1 then
-    vx, vy = 5, 5
+    vx, vy = 5 + (tinyVar/100), 5
   elseif r == 2 then
-    vx, vy = -5, 5
+    vx, vy = -5, 5 - (tinyVar/100)
   elseif r == 3 then
-    vx, vy = -5, -5
+    vx, vy = -5 + (tinyVar/100), -5
   elseif r == 4 then
-    vx, vy = 5, -5
+    vx, vy = 5, -5 - (tinyVar/100)
   end
   ballVelocityX = vx
   ballVelocityY = vy
@@ -463,9 +468,23 @@ function P.updatePaddle(n, p)
   end
   
   local newPaddle = P.createPaddleObject(n, 0, 0, 0, #blob.others+1)
-  newPaddle.fixture = lp.newFixture(blob.first.body, newPaddle.shape, .1)
+  newPaddle.fixture = lp.newFixture(blob.first.body, newPaddle.shape, .05)
   table.insert(blob.others, newPaddle)
   
 end
+
+function tinyChanges(vx, vy)
+  
+  local rand = love.math.random(1,9)
+  local which = love.math.random(1,2)
+  
+  if which == 1 then
+    return vx + (rand/10), vy
+  else
+    return vx, vy + (rand/10)
+  end
+  
+end
+
 
 return P
