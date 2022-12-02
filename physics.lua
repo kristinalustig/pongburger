@@ -46,6 +46,17 @@ function P.initPhysics()
   
   h1 = 40
   h2 = 642
+  
+  
+  data = {somedata = 1}
+  
+  --bunch of other stuff
+  
+  data = {}
+  
+  for k, v in ipairs(data) do
+    --
+  end
 
   world = lp.newWorld(0, 0, true)
   
@@ -62,13 +73,13 @@ function P.initPhysics()
   objects.paddleBlob1.first = P.createPaddleObject("startingPaddle", 1, 24, 200)
   objects.paddleBlob2.first = P.createPaddleObject("startingPaddle", 1, w-24, 200)
   
-  ballData = {}
-  
   --name, x1, y1, x2, y2
   objects.walls.left = P.createWall("left", 0, 0, 0, h) 
   objects.walls.right = P.createWall("right", w, 0, w, h) 
   objects.walls.top = P.createWall("top", 0, h1, w, h1) 
   objects.walls.bottom = P.createWall("bottom", 0, h2, w, h2) 
+  objects.walls.left.fixture:setSensor(true)
+  objects.walls.right.fixture:setSensor(true)
   
   playerOneUpKey = "w"
   playerOneDownKey = "s"
@@ -152,6 +163,18 @@ function P.update(dt)
   local currBallY = currentBall.body:getY()
   local newBallX = currBallX + ballVelocityX
   local newBallY = currBallY + ballVelocityY
+  
+  local touchingLeft = currentBall.body:isTouching(objects.walls.left.body)
+  local touchingRight = currentBall.body:isTouching(objects.walls.right.body)
+
+  if touchingLeft and not startNewRoundOnNextCycle then
+    P.startNewRound(2, currentBall.name)
+  elseif touchingRight and not startNewRoundOnNextCycle then
+    P.startNewRound(1, currentBall.name)
+  elseif startNewRoundOnNextCycle then
+    P.startNewRound(scoringPlayer, currentBall.name)
+  end
+  
   if newBallY < 40 or newBallY > 642 - 32 then
     newBallY = newBallY - ballVelocityY
   end
@@ -179,10 +202,6 @@ function P.update(dt)
   end
   if k(playerTwoDownKey) then
     P.movePaddle(objects.paddleBlob2, 1)
-  end
-  
-  if startNewRoundOnNextCycle then
-    P.startNewRound(scoringPlayer, currentBall.name)
   end
   
 end
@@ -228,13 +247,14 @@ function beginContact(a, b, coll)
     if whichWall == "top" or whichWall == "bottom" then
       ballVelocityY = 0 - ballVelocityY
     elseif whichWall == "left" then
+      print("p2 scores")
       startNewRoundOnNextCycle = true
       scoringPlayer = 2
     elseif whichWall == "right" then
+      print("p1 scores")
       startNewRoundOnNextCycle = true
       scoringPlayer = 1
     elseif whichWall == "leftPaddle" or whichWall == "rightPaddle" then
-      --now we're into paddles
       ballVelocityX = 0 - ballVelocityX
     end
     
@@ -269,21 +289,14 @@ function P.startNewRound(scoredPlayerNum, ingredName)
   local newBall = ""
   
   local potentialBalls = {}
-  
-  print("pre loop")
-  
-  table.insert(ballData, {name = "a", appeared = 0})
+  local iter = 1
   
   for k, v in ipairs(ballData) do
-    print("in loop")
     if v.name ~= ingredName and v.appeared <= appearedNum then
-      table.insert(potentialBalls, v)
-    else
-      print("nope" .. v.name .. " and " .. ingredName)
+      potentialBalls[iter] = v
+      iter = iter + 1
     end
   end
-  
-  print("post loop")
   
   if #potentialBalls == 0 then
     appearedNum = appearedNum + 1
@@ -291,13 +304,13 @@ function P.startNewRound(scoredPlayerNum, ingredName)
   else
     local rand = math.random(1, #potentialBalls)
     newBall = potentialBalls[rand]
+    print(newBall)
   end
   
-  currentBall = P.createBallObject(newBall, 1, w/2, h/2)
+  currentBall = P.createBallObject(newBall.name, 1, w/2, h/2)
   
   startNewRoundOnNextCycle = false
   scoringPlayer = 0
-  
   
 end
 
