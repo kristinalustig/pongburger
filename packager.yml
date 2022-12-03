@@ -1,6 +1,6 @@
 name: pongburger
 shortname: pongburger
-version: 0.0.3
+version: 1.0.0
 assets:
   - "*.lua"
   - assets/**/*

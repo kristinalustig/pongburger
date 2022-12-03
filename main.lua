@@ -76,7 +76,7 @@ function love.keyreleased(k, s)
       currentScene = Scenes.PAUSE
     end
   elseif currentScene == Scenes.PAUSE then
-    if k == "return" then
+    if k == "escape" then
       currentScene = Scenes.BOARD
     end
   elseif currentScene == Scenes.GAME_OVER then
